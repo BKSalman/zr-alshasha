@@ -2,18 +2,16 @@ use iced::{
     executor, keyboard::Event, widget::container, Application, Command, Element, Settings,
     Subscription,
 };
-use iced_native::subscription;
-use my_text::MyText;
+use iced_native::{subscription, widget::Text};
 
 use crate::keys::{iced_to_key, rdev_to_key};
-
-mod my_text;
 
 mod keys;
 
 #[derive(Default)]
 struct ScreenKey {
     keys: String,
+    max_characters: usize,
 }
 
 #[derive(Debug, Clone)]
@@ -33,19 +31,25 @@ impl Application for ScreenKey {
     }
 
     fn title(&self) -> String {
-        String::from("Cool Title")
+        String::from("Zr Alshaha")
     }
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
+        self.max_characters = 20;
         match message {
             Message::RdevEvents(event) => match event {
                 keys::Event::Ready => {
-                    println!("Ready to recieve!");
+                    // println!("Ready to recieve!");
                 }
                 keys::Event::EventRecieved(rdev_event) => match rdev_event.event_type {
                     rdev::EventType::KeyPress(key) => {
+                        if self.keys.len() > self.max_characters {
+                            let (_oldest_key, splitted_content) = self.keys.split_once(" ").unwrap();
+                            self.keys = splitted_content.to_string();
+                        }
                         self.keys = format!("{} {}", self.keys, rdev_to_key(&key));
-                        println!("{key:?}");
+                        // println!("{key:?}");
+                        return Command::none();
                     }
                     _ => {}
                 },
@@ -55,14 +59,20 @@ impl Application for ScreenKey {
                     key_code,
                     modifiers,
                 }) => {
+                    if self.keys.len() > self.max_characters {
+                        let (_oldest_key, splitted_content) = self.keys.split_once(" ").unwrap();
+                        self.keys = splitted_content.to_string();
+                    }
                     self.keys = format!("{} {}", self.keys, iced_to_key(&key_code));
-                    println!("{key_code:?}");
+                    // println!("{key_code:?}");
+                    return Command::none();
                 }
                 _ => {}
             },
             Message::InputChanged(new_value) => {
                 self.keys = String::from(new_value);
             }
+            // _ => {}
         }
         Command::none()
     }
@@ -76,7 +86,7 @@ impl Application for ScreenKey {
     }
 
     fn view(&mut self) -> Element<'_, Self::Message> {
-        container::Container::new(MyText::new(self.keys.as_str(), Message::InputChanged))
+        container::Container::new(Text::new(self.keys.as_str()))
             .width(iced::Length::Fill)
             .height(iced::Length::Fill)
             .center_x()
@@ -88,8 +98,8 @@ fn main() -> Result<(), iced::Error> {
     let settings = Settings {
         window: iced::window::Settings {
             size: (200, 20),
-            // resizable: false,
-            // decorations: false,
+            resizable: false,
+            decorations: false,
             transparent: true,
             always_on_top: true,
             ..Default::default()
