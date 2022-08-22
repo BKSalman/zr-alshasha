@@ -1,0 +1,11 @@
+[package]
+name = "screenkey"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+iced = "0.4.2"
+iced_native = "0.5.1"
+rdev = "0.5.1"
