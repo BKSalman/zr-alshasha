@@ -1,6 +1,6 @@
 use iced::{
     executor, keyboard::Event, widget::container, Application, Command, Element, Settings,
-    Subscription,
+    Subscription, Font,
 };
 use iced_native::{subscription, widget::Text};
 
@@ -21,6 +21,11 @@ pub enum Message {
     InputChanged(String),
 }
 
+const FONT: Font = Font::External {
+    name: "Nerd Font",
+    bytes: include_bytes!("../../screenkey/fonts/Fura Code Bold Nerd Font Complete Mono.ttf"),
+};
+
 impl Application for ScreenKey {
     type Executor = executor::Default;
     type Message = Message;
@@ -35,7 +40,7 @@ impl Application for ScreenKey {
     }
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
-        self.max_characters = 20;
+        self.max_characters = 10;
         match message {
             Message::RdevEvents(event) => match event {
                 keys::Event::Ready => {
@@ -43,7 +48,7 @@ impl Application for ScreenKey {
                 }
                 keys::Event::EventRecieved(rdev_event) => match rdev_event.event_type {
                     rdev::EventType::KeyPress(key) => {
-                        if self.keys.len() > self.max_characters {
+                        if self.keys.chars().count() > self.max_characters {
                             let (_oldest_key, splitted_content) = self.keys.split_once(" ").unwrap();
                             self.keys = splitted_content.to_string();
                         }
@@ -59,7 +64,7 @@ impl Application for ScreenKey {
                     key_code,
                     modifiers,
                 }) => {
-                    if self.keys.len() > self.max_characters {
+                    if self.keys.chars().count() > self.max_characters {
                         let (_oldest_key, splitted_content) = self.keys.split_once(" ").unwrap();
                         self.keys = splitted_content.to_string();
                     }
@@ -86,10 +91,15 @@ impl Application for ScreenKey {
     }
 
     fn view(&mut self) -> Element<'_, Self::Message> {
-        container::Container::new(Text::new(self.keys.as_str()))
+        container::Container::new(
+                Text::new(
+                    self.keys.as_str()
+                )
+                    .font(FONT)
+            )
             .width(iced::Length::Fill)
             .height(iced::Length::Fill)
-            .center_x()
+            .align_x(iced::alignment::Horizontal::Left)
             .into()
     }
 }
