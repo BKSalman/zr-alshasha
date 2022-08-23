@@ -1,3 +1,4 @@
+// #![windows_subsystem = "windows"]
 use iced::{
     executor, keyboard::Event, widget::container, Application, Command, Element, Settings,
     Subscription, Font,
@@ -44,7 +45,7 @@ impl Application for ScreenKey {
         match message {
             Message::RdevEvents(event) => match event {
                 keys::Event::Ready => {
-                    // println!("Ready to recieve!");
+                    println!("Ready to recieve!");
                 }
                 keys::Event::EventRecieved(rdev_event) => match rdev_event.event_type {
                     rdev::EventType::KeyPress(key) => {
@@ -53,7 +54,6 @@ impl Application for ScreenKey {
                             self.keys = splitted_content.to_string();
                         }
                         self.keys = format!("{} {}", self.keys, rdev_to_key(&key));
-                        // println!("{key:?}");
                         return Command::none();
                     }
                     _ => {}
@@ -69,7 +69,6 @@ impl Application for ScreenKey {
                         self.keys = splitted_content.to_string();
                     }
                     self.keys = format!("{} {}", self.keys, iced_to_key(&key_code));
-                    // println!("{key_code:?}");
                     return Command::none();
                 }
                 _ => {}
@@ -99,7 +98,7 @@ impl Application for ScreenKey {
             )
             .width(iced::Length::Fill)
             .height(iced::Length::Fill)
-            .align_x(iced::alignment::Horizontal::Left)
+            .center_x()
             .into()
     }
 }
@@ -109,7 +108,7 @@ fn main() -> Result<(), iced::Error> {
         window: iced::window::Settings {
             size: (200, 20),
             resizable: false,
-            decorations: false,
+            // decorations: false,
             transparent: true,
             always_on_top: true,
             ..Default::default()
