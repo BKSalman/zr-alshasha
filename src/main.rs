@@ -1,7 +1,7 @@
 // #![windows_subsystem = "windows"]
 use iced::{
     executor, keyboard::Event, widget::container, Application, Command, Element, Settings,
-    Subscription, Font,
+    Subscription, Font, container::{StyleSheet, Style}, Background, Color,
 };
 use iced_native::{subscription, widget::Text};
 
@@ -12,7 +12,7 @@ mod keys;
 #[derive(Default)]
 struct ScreenKey {
     keys: String,
-    max_characters: usize,
+    max_characters: u32,
 }
 
 #[derive(Debug, Clone)]
@@ -26,6 +26,22 @@ const FONT: Font = Font::External {
     name: "Nerd Font",
     bytes: include_bytes!("../../screenkey/fonts/Fura Code Bold Nerd Font Complete Mono.ttf"),
 };
+
+const WIDTH: u32 = 400;
+
+struct ContainerStyles;
+
+
+impl StyleSheet for ContainerStyles {
+    fn style(&self) -> Style {
+        Style {
+            background: Some(Background::Color(Color::TRANSPARENT)),
+            border_radius: 10.,
+            ..Default::default()
+        }
+    } 
+}
+
 
 impl Application for ScreenKey {
     type Executor = executor::Default;
@@ -41,7 +57,7 @@ impl Application for ScreenKey {
     }
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
-        self.max_characters = 10;
+        self.max_characters = (WIDTH / 10)/2;
         match message {
             Message::RdevEvents(event) => match event {
                 keys::Event::Ready => {
@@ -49,7 +65,7 @@ impl Application for ScreenKey {
                 }
                 keys::Event::EventRecieved(rdev_event) => match rdev_event.event_type {
                     rdev::EventType::KeyPress(key) => {
-                        if self.keys.chars().count() > self.max_characters {
+                        if self.keys.chars().count() > self.max_characters as usize {
                             let (_oldest_key, splitted_content) = self.keys.split_once(" ").unwrap();
                             self.keys = splitted_content.to_string();
                         }
@@ -64,7 +80,7 @@ impl Application for ScreenKey {
                     key_code,
                     modifiers,
                 }) => {
-                    if self.keys.chars().count() > self.max_characters {
+                    if self.keys.chars().count() > self.max_characters as usize {
                         let (_oldest_key, splitted_content) = self.keys.split_once(" ").unwrap();
                         self.keys = splitted_content.to_string();
                     }
@@ -99,6 +115,7 @@ impl Application for ScreenKey {
             .width(iced::Length::Fill)
             .height(iced::Length::Fill)
             .center_x()
+            .style(ContainerStyles)
             .into()
     }
 }
@@ -106,7 +123,7 @@ impl Application for ScreenKey {
 fn main() -> Result<(), iced::Error> {
     let settings = Settings {
         window: iced::window::Settings {
-            size: (200, 20),
+            size: (WIDTH, 20),
             resizable: false,
             // decorations: false,
             transparent: true,
