@@ -158,7 +158,7 @@ pub fn iced_to_key(key_code: &KeyCode) -> &str {
 
         KeyCode::Backspace => "⌫",
         KeyCode::Enter => ENTER,
-        KeyCode::Space => "__",
+        KeyCode::Space => "_",
 
         KeyCode::Compose => "Compose",
 
@@ -276,7 +276,7 @@ pub fn rdev_to_key(key_code: &rdev::Key) -> &str {
         rdev::Key::Return => ENTER,
         rdev::Key::ShiftLeft => SHIFT,
         rdev::Key::ShiftRight => SHIFT,
-        rdev::Key::Space => "__",
+        rdev::Key::Space => "_",
         rdev::Key::Tab => TAB,
         rdev::Key::PrintScreen => "PrtSc",
         rdev::Key::ScrollLock => "ScrLk",
@@ -348,7 +348,7 @@ pub fn rdev_to_key(key_code: &rdev::Key) -> &str {
         rdev::Key::Kp9 => "Kp9",
         rdev::Key::KpDelete => DELETE,
         rdev::Key::Function => "Function",
-        rdev::Key::Unknown(unknown) => unknown_to_key(unknown) ,
+        rdev::Key::Unknown(unknown) => unknown_to_key(unknown),
     }
 }
 
