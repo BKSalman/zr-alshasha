@@ -8,4 +8,5 @@ edition = "2021"
 [dependencies]
 iced = "0.4.2"
 iced_native = "0.5.1"
+image = "0.24.3"
 rdev = "0.5.1"

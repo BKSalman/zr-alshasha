@@ -1,15 +1,15 @@
 // #![windows_subsystem = "windows"]
 use iced::{
-    window::{self, Position},
     container::{Style, StyleSheet},
     executor,
     keyboard::Event,
     mouse,
     widget::container,
+    window::{self, Icon, Position},
     Application, Background, Color, Command, Element, Font, Settings, Subscription,
 };
-use iced_native::{subscription, widget::Text};
-
+use iced_native::{subscription, widget::Text, window as native_window};
+use image;
 use crate::keys::{iced_to_key, rdev_to_key};
 
 mod keys;
@@ -19,6 +19,8 @@ struct ScreenKey {
     keys: String,
     max_characters: u32,
     is_grabbing: bool,
+    grab_location: (i32, i32),
+    window_position: (i32, i32),
 }
 
 #[derive(Debug, Clone)]
@@ -35,7 +37,7 @@ const FONT: Font = Font::External {
 
 const WIDTH: u32 = 400;
 
-const SIZE: u16 = 30;
+const HEIGHT: u16 = 30;
 
 struct ContainerStyles;
 
@@ -98,6 +100,7 @@ impl Application for ScreenKey {
                     iced::mouse::Button::Right,
                 )) => {
                     self.is_grabbing = true;
+                    self.grab_location = (0, 0);
                 }
                 iced_native::Event::Mouse(mouse::Event::ButtonReleased(
                     iced::mouse::Button::Right,
@@ -105,11 +108,24 @@ impl Application for ScreenKey {
                     self.is_grabbing = false;
                 }
                 iced_native::Event::Mouse(mouse::Event::CursorMoved { position }) => {
+                    if self.grab_location == (0, 0) {
+                        self.grab_location = (position.x as i32, position.y as i32);
+                    }
                     if self.is_grabbing == true {
-                        return window::move_to(position.x as i32, position.y as i32);
+                        let x = position.x as i32 + self.window_position.0 - self.grab_location.0;
+                        let y = position.y as i32 + self.window_position.1 - self.grab_location.1;
+                        return window::move_to(
+                            x,
+                            y
+                        );
                     }
                 }
-                _ => {}
+                iced_native::Event::Window(native_window::Event::Moved { x, y }) => {
+                    self.window_position = (x, y);
+                }
+                _ => {
+                    // println!("{event:?}");
+                }
             },
             Message::InputChanged(new_value) => {
                 self.keys = String::from(new_value);
@@ -133,7 +149,7 @@ impl Application for ScreenKey {
     fn view(&mut self) -> Element<'_, Self::Message> {
         container::Container::new(
             Text::new(self.keys.as_str())
-                .size(SIZE)
+                .size(HEIGHT)
                 .color(Color::WHITE)
                 .font(FONT),
         )
@@ -145,16 +161,29 @@ impl Application for ScreenKey {
     }
 }
 
+fn make_window_icon(path: &str) -> Icon {
+    let (icon_rgba, icon_width, icon_height) = {
+        let image = image::open(path)
+            .expect("Failed to open icon path")
+            .into_rgba8();
+        let (width, height) = image.dimensions();
+        let rgba = image.into_raw();
+        (rgba, width, height)
+    };
+
+    Icon::from_rgba(icon_rgba, icon_width, icon_height).unwrap()
+}
+
 fn main() -> Result<(), iced::Error> {
     let settings = Settings {
         window: iced::window::Settings {
-            size: (WIDTH, SIZE.into()),
+            size: (WIDTH, HEIGHT.into()),
             resizable: false,
-            position: Position::Centered,
+            position: Position::Specific(100, 100),
             decorations: false,
             transparent: true,
             always_on_top: true,
-            icon: Option<Icon>
+            icon: Some(make_window_icon("assets/peepoSalute.png")),
             ..Default::default()
         },
         ..Default::default()
