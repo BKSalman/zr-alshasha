@@ -1,4 +1,5 @@
 // #![windows_subsystem = "windows"]
+use crate::keys::{iced_to_key, rdev_to_key};
 use iced::{
     container::{Style, StyleSheet},
     executor,
@@ -10,14 +11,15 @@ use iced::{
 };
 use iced_native::{subscription, widget::Text, window as native_window};
 use image;
-use crate::keys::{iced_to_key, rdev_to_key};
 
 mod keys;
 
 #[derive(Default)]
 struct ScreenKey {
     keys: String,
-    max_characters: u32,
+    max_width: u32,
+    width: u32,
+    line: u32,
     is_grabbing: bool,
     grab_location: (i32, i32),
     window_position: (i32, i32),
@@ -44,7 +46,12 @@ struct ContainerStyles;
 impl StyleSheet for ContainerStyles {
     fn style(&self) -> Style {
         Style {
-            background: Some(Background::Color(Color::BLACK)),
+            background: Some(Background::Color(Color {
+                r: 0.0,
+                g: 0.0,
+                b: 0.0,
+                a: 0.5,
+            })),
             border_radius: 10.,
             ..Default::default()
         }
@@ -57,7 +64,18 @@ impl Application for ScreenKey {
     type Flags = ();
 
     fn new(_flags: Self::Flags) -> (Self, iced::Command<Self::Message>) {
-        (Self::default(), Command::none())
+        (
+            Self {
+                keys: "".to_string(),
+                max_width: 1050,
+                width: 0,
+                line: 1,
+                is_grabbing: false,
+                grab_location: (0, 0),
+                window_position: (0, 0),
+            },
+            Command::none(),
+        )
     }
 
     fn title(&self) -> String {
@@ -65,7 +83,15 @@ impl Application for ScreenKey {
     }
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
-        self.max_characters = (WIDTH / 10) / 2;
+        self.width = ((self.keys.chars().count() / 2) as u32 * HEIGHT as u32 + 50)
+            - (self.max_width * (self.line - 1));
+        if self.width >= self.max_width {
+            self.line += 1;
+        }
+        if self.line > 3 {
+            self.line = 1;
+            self.keys = "".to_string();
+        }
         match message {
             Message::RdevEvents(event) => match event {
                 keys::Event::Ready => {
@@ -73,13 +99,17 @@ impl Application for ScreenKey {
                 }
                 keys::Event::EventRecieved(rdev_event) => match rdev_event.event_type {
                     rdev::EventType::KeyPress(key) => {
-                        if self.keys.chars().count() > self.max_characters as usize {
-                            let (_oldest_key, splitted_content) =
-                                self.keys.split_once(" ").unwrap();
-                            self.keys = splitted_content.to_string();
-                        }
                         self.keys = format!("{} {}", self.keys, rdev_to_key(&key));
-                        return Command::none();
+                        return Command::single(iced_native::command::Action::Window(
+                            native_window::Action::Resize {
+                                width: if self.line > 1 {
+                                    self.max_width
+                                } else {
+                                    self.width
+                                },
+                                height: HEIGHT as u32 * self.line,
+                            },
+                        ));
                     }
                     _ => {}
                 },
@@ -89,12 +119,17 @@ impl Application for ScreenKey {
                     key_code,
                     modifiers,
                 }) => {
-                    if self.keys.chars().count() > self.max_characters as usize {
-                        let (_oldest_key, splitted_content) = self.keys.split_once(" ").unwrap();
-                        self.keys = splitted_content.to_string();
-                    }
                     self.keys = format!("{} {}", self.keys, iced_to_key(&key_code));
-                    return Command::none();
+                    return Command::single(iced_native::command::Action::Window(
+                        native_window::Action::Resize {
+                            width: if self.line > 1 {
+                                self.max_width
+                            } else {
+                                self.width
+                            },
+                            height: HEIGHT as u32 * self.line,
+                        },
+                    ));
                 }
                 iced_native::Event::Mouse(mouse::Event::ButtonPressed(
                     iced::mouse::Button::Right,
@@ -114,10 +149,7 @@ impl Application for ScreenKey {
                     if self.is_grabbing == true {
                         let x = position.x as i32 + self.window_position.0 - self.grab_location.0;
                         let y = position.y as i32 + self.window_position.1 - self.grab_location.1;
-                        return window::move_to(
-                            x,
-                            y
-                        );
+                        return window::move_to(x, y);
                     }
                 }
                 iced_native::Event::Window(native_window::Event::Moved { x, y }) => {
@@ -150,8 +182,11 @@ impl Application for ScreenKey {
         container::Container::new(
             Text::new(self.keys.as_str())
                 .size(HEIGHT)
+                .height(iced::Length::Fill)
                 .color(Color::WHITE)
-                .font(FONT),
+                .font(FONT)
+                .vertical_alignment(iced::alignment::Vertical::Center)
+                .horizontal_alignment(iced::alignment::Horizontal::Center),
         )
         .width(iced::Length::Fill)
         .height(iced::Length::Fill)
@@ -177,7 +212,7 @@ fn make_window_icon(path: &str) -> Icon {
 fn main() -> Result<(), iced::Error> {
     let settings = Settings {
         window: iced::window::Settings {
-            size: (WIDTH, HEIGHT.into()),
+            size: (1, 1),
             resizable: false,
             position: Position::Specific(100, 100),
             decorations: false,
