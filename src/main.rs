@@ -1,4 +1,4 @@
-// #![windows_subsystem = "windows"]
+#![windows_subsystem = "windows"]
 use crate::keys::{iced_to_key, rdev_to_key};
 use iced::{
     container::{Style, StyleSheet},
@@ -37,7 +37,7 @@ const FONT: Font = Font::External {
     bytes: include_bytes!("../fonts/Fura Code Bold Nerd Font Complete Mono.ttf"),
 };
 
-const WIDTH: u32 = 400;
+// const WIDTH: u32 = 400;
 
 const HEIGHT: u16 = 30;
 
@@ -149,6 +149,7 @@ impl Application for ScreenKey {
                     if self.is_grabbing == true {
                         let x = position.x as i32 + self.window_position.0 - self.grab_location.0;
                         let y = position.y as i32 + self.window_position.1 - self.grab_location.1;
+                        println!("{:?}", self.window_position);
                         return window::move_to(x, y);
                     }
                 }
@@ -214,7 +215,7 @@ fn main() -> Result<(), iced::Error> {
         window: iced::window::Settings {
             size: (1, 1),
             resizable: false,
-            position: Position::Specific(100, 100),
+            position: Position::Specific(423, 941),
             decorations: false,
             transparent: true,
             always_on_top: true,
