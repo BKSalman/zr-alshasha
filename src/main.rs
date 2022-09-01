@@ -17,6 +17,8 @@ mod keys;
 #[derive(Default)]
 struct ScreenKey {
     keys: String,
+    key_frequency: u32,
+    frequent_key: String,
     max_width: u32,
     width: u32,
     line: u32,
@@ -67,6 +69,8 @@ impl Application for ScreenKey {
         (
             Self {
                 keys: "".to_string(),
+                key_frequency: 0,
+                frequent_key: "".to_string(),
                 max_width: 1050,
                 width: 0,
                 line: 1,
@@ -105,7 +109,41 @@ impl Application for ScreenKey {
                 }
                 keys::Event::EventRecieved(rdev_event) => match rdev_event.event_type {
                     rdev::EventType::KeyPress(key) => {
-                        self.keys = format!("{} {}", self.keys, rdev_to_key(&key));
+                        let coming_key = rdev_to_key(&key).to_string();
+                        if self.frequent_key != coming_key {
+                            self.key_frequency = 0;
+                            self.frequent_key = "".to_string();
+                        }
+                        let frequent_key =
+                            format!("{}...x{} ", self.frequent_key, self.key_frequency);
+                        self.key_frequency += 1;
+
+                        self.frequent_key = coming_key.clone();
+
+                        let new_frequent_key =
+                            format!("{}...x{} ", self.frequent_key, self.key_frequency);
+
+                        if self.key_frequency > 3 {
+                            let repeated_key = format!(
+                                "{} {} {} ",
+                                self.frequent_key, self.frequent_key, self.frequent_key
+                            );
+                            if self.keys.ends_with(repeated_key.as_str()) {
+                                self.keys = format!(
+                                    "{}{}",
+                                    self.keys.trim_end_matches(repeated_key.as_str()),
+                                    new_frequent_key
+                                );
+                            } else {
+                                self.keys = format!(
+                                    "{}{}",
+                                    self.keys.trim_end_matches(frequent_key.as_str()),
+                                    new_frequent_key
+                                );
+                            }
+                        } else {
+                            self.keys = format!("{}{} ", self.keys, coming_key);
+                        }
                         return Command::single(iced_native::command::Action::Window(
                             native_window::Action::Resize {
                                 width: if self.line > 1 {
@@ -126,7 +164,40 @@ impl Application for ScreenKey {
                     key_code,
                     modifiers,
                 }) => {
-                    self.keys = format!("{} {}", self.keys, iced_to_key(&key_code));
+                    let coming_key = iced_to_key(&key_code).to_string();
+                    if self.frequent_key != coming_key {
+                        self.key_frequency = 0;
+                        self.frequent_key = "".to_string();
+                    }
+                    let frequent_key = format!("{}...x{} ", self.frequent_key, self.key_frequency);
+                    self.key_frequency += 1;
+
+                    self.frequent_key = coming_key.clone();
+
+                    let new_frequent_key =
+                        format!("{}...x{} ", self.frequent_key, self.key_frequency);
+
+                    if self.key_frequency > 3 {
+                        let repeated_key = format!(
+                            "{} {} {} ",
+                            self.frequent_key, self.frequent_key, self.frequent_key
+                        );
+                        if self.keys.ends_with(repeated_key.as_str()) {
+                            self.keys = format!(
+                                "{}{}",
+                                self.keys.trim_end_matches(repeated_key.as_str()),
+                                new_frequent_key
+                            );
+                        } else {
+                            self.keys = format!(
+                                "{}{}",
+                                self.keys.trim_end_matches(frequent_key.as_str()),
+                                new_frequent_key
+                            );
+                        }
+                    } else {
+                        self.keys = format!("{}{} ", self.keys, coming_key);
+                    }
                     return Command::single(iced_native::command::Action::Window(
                         native_window::Action::Resize {
                             width: if self.line > 1 {
@@ -221,7 +292,6 @@ fn main() -> Result<(), iced::Error> {
     let settings = Settings {
         window: iced::window::Settings {
             size: (1, 1),
-            // resizable: false,
             position: Position::Specific(464, 918),
             decorations: false,
             transparent: true,
