@@ -1,4 +1,4 @@
-#![windows_subsystem = "windows"]
+// #![windows_subsystem = "windows"]
 use crate::keys::{iced_to_key, rdev_to_key};
 use iced::{
     container::{Style, StyleSheet},
@@ -91,6 +91,12 @@ impl Application for ScreenKey {
         if self.line > 3 {
             self.line = 1;
             self.keys = "".to_string();
+            return Command::single(iced_native::command::Action::Window(
+                native_window::Action::Resize {
+                    width: 1,
+                    height: HEIGHT as u32 * self.line,
+                },
+            ));
         }
         match message {
             Message::RdevEvents(event) => match event {
@@ -115,6 +121,7 @@ impl Application for ScreenKey {
                 },
             },
             Message::IcedEvents(event) => match event {
+                #[cfg(target_os = "windows")]
                 iced_native::Event::Keyboard(Event::KeyPressed {
                     key_code,
                     modifiers,
@@ -149,7 +156,7 @@ impl Application for ScreenKey {
                     if self.is_grabbing == true {
                         let x = position.x as i32 + self.window_position.0 - self.grab_location.0;
                         let y = position.y as i32 + self.window_position.1 - self.grab_location.1;
-                        println!("{:?}", self.window_position);
+                        // println!("{:?}", self.window_position);
                         return window::move_to(x, y);
                     }
                 }
@@ -214,8 +221,8 @@ fn main() -> Result<(), iced::Error> {
     let settings = Settings {
         window: iced::window::Settings {
             size: (1, 1),
-            resizable: false,
-            position: Position::Specific(423, 941),
+            // resizable: false,
+            position: Position::Specific(464, 918),
             decorations: false,
             transparent: true,
             always_on_top: true,
