@@ -1,4 +1,5 @@
-// #![windows_subsystem = "windows"]
+#![windows_subsystem = "windows"] // uncomment before build
+use std::io::Cursor;
 use crate::keys::{iced_to_key, rdev_to_key};
 use iced::{
     container::{Style, StyleSheet},
@@ -162,7 +163,7 @@ impl Application for ScreenKey {
                 #[cfg(target_os = "windows")]
                 iced_native::Event::Keyboard(Event::KeyPressed {
                     key_code,
-                    modifiers,
+                    modifiers: _,
                 }) => {
                     let coming_key = iced_to_key(&key_code).to_string();
                     if self.frequent_key != coming_key {
@@ -275,20 +276,24 @@ impl Application for ScreenKey {
     }
 }
 
-fn make_window_icon(path: &str) -> Icon {
+fn image_to_icon() -> Result<Icon, std::io::Error> {
     let (icon_rgba, icon_width, icon_height) = {
-        let image = image::open(path)
-            .expect("Failed to open icon path")
-            .into_rgba8();
+        let image =
+            image::io::Reader::new(Cursor::new(include_bytes!("../assets/peepoSalute.png")))
+                .with_guessed_format()?
+                .decode()
+                .expect("Failed to open icon path")
+                .into_rgba8();
         let (width, height) = image.dimensions();
         let rgba = image.into_raw();
         (rgba, width, height)
     };
-
-    Icon::from_rgba(icon_rgba, icon_width, icon_height).unwrap()
+    let icon = Icon::from_rgba(icon_rgba, icon_width, icon_height).unwrap();
+    Ok(icon)
 }
 
 fn main() -> Result<(), iced::Error> {
+    let icon = image_to_icon();
     let settings = Settings {
         window: iced::window::Settings {
             size: (1, 1),
@@ -296,7 +301,11 @@ fn main() -> Result<(), iced::Error> {
             decorations: false,
             transparent: true,
             always_on_top: true,
-            icon: Some(make_window_icon("assets/peepoSalute.png")),
+            icon: if icon.is_ok() {
+                Some(icon.unwrap())
+            } else {
+                None
+            },
             ..Default::default()
         },
         ..Default::default()
