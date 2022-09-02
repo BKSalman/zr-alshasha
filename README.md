@@ -17,4 +17,4 @@ showcasing the lastest feature I added which is the repeated keys :)
 - [x] [Show pressed keys](https://github.com/BKSalman/zr-alshasha/issues/1)
 
 ## what does Zr Alshasha mean
-it just means screen key
+it just means screen key in Arabic
