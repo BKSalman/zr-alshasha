@@ -117,6 +117,7 @@ impl Application for ScreenKey {
                         }
                         let frequent_key =
                             format!("{}...x{} ", self.frequent_key, self.key_frequency);
+
                         self.key_frequency += 1;
 
                         self.frequent_key = coming_key.clone();
@@ -297,7 +298,7 @@ fn main() -> Result<(), iced::Error> {
     let settings = Settings {
         window: iced::window::Settings {
             size: (1, 1),
-            position: Position::Specific(464, 918),
+            position: Position::Centered,
             decorations: false,
             transparent: true,
             always_on_top: true,

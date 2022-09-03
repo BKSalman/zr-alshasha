@@ -11,10 +11,16 @@ https://user-images.githubusercontent.com/85521119/188181233-1db31f88-77d2-4f54-
 
 showcasing the lastest feature I added which is the repeated keys :)
 
+# Key binds
+|Key|Description|
+|---|---|
+|Right-Click(hold)|Move the window|
+
 # Features
-## Main features
 
 - [x] [Show pressed keys](https://github.com/BKSalman/zr-alshasha/issues/1)
+- [x] [Move window](https://github.com/BKSalman/zr-alshasha/issues/3)
+- [ ] [User settings](https://github.com/BKSalman/zr-alshasha/issues/2)
 
 ## what does Zr Alshasha mean
 it just means screen key in Arabic
