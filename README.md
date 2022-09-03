@@ -18,9 +18,9 @@ showcasing the lastest feature I added which is the repeated keys :)
 
 # Features
 
-- [x] [Show pressed keys](https://github.com/BKSalman/zr-alshasha/issues/1)
-- [x] [Move window](https://github.com/BKSalman/zr-alshasha/issues/3)
-- [ ] [User settings](https://github.com/BKSalman/zr-alshasha/issues/2)
+- Show pressed keys 
+
+You can track features in [this issue](https://github.com/BKSalman/zr-alshasha/issues/4)
 
 ## what does Zr Alshasha mean
 it just means screen key in Arabic
