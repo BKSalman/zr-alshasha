@@ -14,3 +14,6 @@ iced = "0.4.2"
 iced_native = "0.5.1"
 image = "0.24.3"
 rdev = "0.5.1"
+dirs = "4.0.0"
+toml = "0.5.9"
+serde = { version = "1.0.145", features = ["derive"] }
