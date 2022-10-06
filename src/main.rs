@@ -155,7 +155,7 @@ impl Application for ScreenKey {
                 }
             },
             Message::IcedEvents(event) => match event {
-                // #[cfg(not(target_os = "linux"))]
+                #[cfg(not(target_os = "linux"))]
                 iced_native::Event::Keyboard(Event::KeyPressed {
                     key_code,
                     modifiers: _,
@@ -248,7 +248,7 @@ impl ScreenKey {
         KS: keys::Keys,
     {
         let coming_key = key_to_string(&key);
-
+        
         if self.frequent_key != coming_key {
             self.key_frequency = 0;
             self.frequent_key = "".to_string();
@@ -263,8 +263,10 @@ impl ScreenKey {
         let new_frequent_key = format!("{}...x{} ", self.frequent_key, self.key_frequency);
 
         // add extra width for long keys to fit in the same line
-        if coming_key.chars().count() > 1 && self.key_frequency < 3 {
-            self.extra_width += 10;
+        let coming_key_char_count = coming_key.chars().count();
+        
+        if  coming_key_char_count > 1 && self.key_frequency < 3 && !self.keys.starts_with("...") {
+            self.extra_width += coming_key_char_count as u32 * 2;
         }
 
         if self.key_frequency > 3 {
