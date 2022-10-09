@@ -24,9 +24,11 @@ https://user-images.githubusercontent.com/85521119/188181233-1db31f88-77d2-4f54-
 
     for now, you can specify the window position and the font size using a toml file in your config directory under "zr-alshasha"
 
-    // Linux:   /home/alice/.config/zr-alshasha/config.toml
-    // Windows: C:\Users\Alice\AppData\Roaming\zr-alshasha\config.toml
-    // Mac:     /Users/Alice/Library/Application Support/zr-alshasha/config.toml
+    Linux:   /home/alice/.config/zr-alshasha/config.toml
+    
+    Windows: C:\Users\Alice\AppData\Roaming\zr-alshasha\config.toml
+    
+    Mac:     /Users/Alice/Library/Application Support/zr-alshasha/config.toml
 
     ```
       [position]
