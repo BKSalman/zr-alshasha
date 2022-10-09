@@ -13,7 +13,8 @@ All notable changes to this project will be documented in this file.
 - replacing oldest keys pressed with "...", instead of adding a new line
 
 ### Fixed
-- keys with longer names not fitting in window width
+- keys with longer names (Alt, Win) now fit in window width
+- width is more consistent now
 
 ## [0.1.1] - 2022-09-07
  
