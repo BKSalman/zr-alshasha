@@ -1,18 +1,21 @@
-#![windows_subsystem = "windows"] // uncomment before build
+// #![windows_subsystem = "windows"] // uncomment before build
 use crate::keys::rdev_to_key;
 
-// #[cfg(not(target_os = "linux"))]
+#[cfg(not(target_os = "linux"))]
 use crate::keys::iced_to_key;
+
+#[cfg(not(target_os = "linux"))]
+use iced::keyboard::Event;
 
 use iced::{
     container::{Style, StyleSheet},
     executor,
-    keyboard::Event,
     mouse,
     widget::container,
     window::{self, Icon, Position},
     Application, Background, Color, Command, Element, Font, Settings, Subscription,
 };
+
 use iced_native::{subscription, widget::Text, window as native_window};
 use serde::Deserialize;
 use std::io::Cursor;
@@ -55,11 +58,10 @@ struct ScreenKey {
     max_width: u32,
     width: u32,
     font_size: u32,
-    line: u32,
     is_grabbing: bool,
     grab_location: (i32, i32),
     window_position: (i32, i32),
-    extra_width: u32,
+    // extra_width: u32,
 }
 
 #[derive(Debug, Clone)]
@@ -114,14 +116,12 @@ impl Application for ScreenKey {
                 keys: "".to_string(),
                 key_frequency: 0,
                 frequent_key: "".to_string(),
-                max_width: 1050,
+                max_width: config.font_size.unwrap_or(30) * 20,
                 width: 0,
                 font_size: config.font_size.unwrap_or(30),
-                line: 1,
                 is_grabbing: false,
                 grab_location: (0, 0),
                 window_position: (0, 0),
-                extra_width: 0,
             },
             Command::none(),
         )
@@ -132,16 +132,6 @@ impl Application for ScreenKey {
     }
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
-        self.width = (self.keys.chars().count() / 2) as u32 * self.font_size + 50;
-
-        if self.width >= self.max_width {
-            if self.keys.starts_with("...") {
-                self.keys.replace_range(3..6, "");
-            } else {
-                self.keys.replace_range(0..3, "...");
-            }
-        }
-
         match message {
             Message::RdevEvents(event) => match event {
                 keys::Event::Ready => {
@@ -210,7 +200,7 @@ impl Application for ScreenKey {
 
     fn view(&mut self) -> Element<'_, Self::Message> {
         container::Container::new(
-            Text::new(self.keys.as_str())
+            Text::new(self.keys.clone())
                 .size(self.font_size as u16)
                 .height(iced::Length::Fill)
                 .color(Color::WHITE)
@@ -247,7 +237,7 @@ impl ScreenKey {
     where
         KS: keys::Keys,
     {
-        let coming_key = key_to_string(&key);
+        let coming_key = key_to_string(key);
         
         if self.frequent_key != coming_key {
             self.key_frequency = 0;
@@ -261,13 +251,6 @@ impl ScreenKey {
         self.frequent_key = coming_key.clone();
 
         let new_frequent_key = format!("{}...x{} ", self.frequent_key, self.key_frequency);
-
-        // add extra width for long keys to fit in the same line
-        let coming_key_char_count = coming_key.chars().count();
-        
-        if  coming_key_char_count > 1 && self.key_frequency < 3 && !self.keys.starts_with("...") {
-            self.extra_width += coming_key_char_count as u32 * 2;
-        }
 
         if self.key_frequency > 3 {
             let repeated_key = format!(
@@ -291,16 +274,22 @@ impl ScreenKey {
         } else {
             self.keys = format!("{}{} ", self.keys, coming_key);
         }
-        return Command::single(iced_native::command::Action::Window(
+        
+        if self.width >= self.max_width {
+            let keys = self.keys.splitn(3, ' ')
+                .collect::<Vec<&str>>()[2];
+            
+            self.keys = format!("... {}", &keys.to_string());
+        }
+        
+        self.width = (self.keys.trim_matches(' ').chars().count() / 2) as u32 * self.font_size;
+        
+        Command::single(iced_native::command::Action::Window(
             native_window::Action::Resize {
-                width: if self.line > 1 {
-                    self.max_width
-                } else {
-                    self.width + self.extra_width
-                },
-                height: self.font_size * self.line,
+                width: self.width + 50,
+                height: self.font_size,
             },
-        ));
+        ))
     }
 }
 

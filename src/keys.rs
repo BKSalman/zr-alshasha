@@ -3,7 +3,7 @@ use iced::{
     Subscription,
 };
 
-// #[cfg(not(target_os = "linux"))]
+#[cfg(not(target_os = "linux"))]
 use iced::keyboard::KeyCode;
 
 use iced_native::subscription;
@@ -13,7 +13,7 @@ pub trait Keys {
     
 }
 
-// #[cfg(not(target_os = "linux"))]
+#[cfg(not(target_os = "linux"))]
 impl Keys for KeyCode {
     
 }
@@ -76,7 +76,7 @@ pub fn bind() -> Subscription<Event> {
     )
 }
 
-// #[cfg(not(target_os = "linux"))]
+#[cfg(not(target_os = "linux"))]
 pub fn iced_to_key(key_code: &KeyCode) -> String {
     match key_code {
         KeyCode::Key1 => "1".to_string(),
