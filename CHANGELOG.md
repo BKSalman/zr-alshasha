@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
     - font size (window doesn't scale with font)
 
 ### Changed
-- replacing oldest keys pressed with "...", instead of adding a new line
+- removed lines, now it replaces oldest keys with "..."
 
 ### Fixed
 - keys with longer names (Alt, Win) now fit in window width
