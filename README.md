@@ -30,7 +30,7 @@ https://user-images.githubusercontent.com/85521119/188181233-1db31f88-77d2-4f54-
     
     Mac:     /Users/Alice/Library/Application Support/zr-alshasha/config.toml
 
-    ```
+    ```toml
       [position]
       x = 1000 # Default is 1000
       y = 1000 # Default is 1000
