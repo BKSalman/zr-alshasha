@@ -30,12 +30,15 @@ https://user-images.githubusercontent.com/85521119/188181233-1db31f88-77d2-4f54-
     
     Mac:     /Users/Alice/Library/Application Support/zr-alshasha/config.toml
 
-    ```
-      [position]
-      x = 1000 # Default is 1000
-      y = 1000 # Default is 1000
+    ```toml
+        font_size = 30 # Default is 30
 
-      font_size = 30 # Default is 30
+        width = 1000 # Default is 500
+
+        [position]
+        x = 2000 # Default is 1000
+        y = 2000 # Default is 1000
+
     ```
 
 
