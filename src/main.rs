@@ -9,9 +9,8 @@ use crate::keys::iced_to_key;
 use iced::keyboard::Event;
 
 use iced::{
-    time,
     container::{Style, StyleSheet},
-    executor, mouse,
+    executor, mouse, time,
     widget::container,
     window::{self, Icon, Position},
     Application, Background, Color, Command, Element, Font, Settings, Subscription,
@@ -20,7 +19,10 @@ use iced::{
 use iced_native::{subscription, widget::Text, window as native_window};
 use keys::BACK_SPACE;
 use serde::Deserialize;
-use std::{io::Cursor, time::{Instant, Duration}};
+use std::{
+    io::Cursor,
+    time::{Duration, Instant},
+};
 use toml::from_str;
 
 mod keys;
@@ -75,7 +77,9 @@ struct ScreenKey {
 enum TimerState {
     #[default]
     Idle,
-    Ticking{ last_tick: Instant }
+    Ticking {
+        last_tick: Instant,
+    },
 }
 
 #[derive(Debug, Clone)]
@@ -128,9 +132,9 @@ impl Application for ScreenKey {
 
         println!("{config:?}");
 
-        let max_width = config.width.unwrap_or_else(|| {
-            Config::default().width.unwrap()
-        });
+        let max_width = config
+            .width
+            .unwrap_or_else(|| Config::default().width.unwrap());
 
         (
             Self {
@@ -145,7 +149,9 @@ impl Application for ScreenKey {
                 is_grabbing: false,
                 grab_location: (0, 0),
                 window_position: (0, 0),
-                timer_state: TimerState::Ticking { last_tick: Instant::now() },
+                timer_state: TimerState::Ticking {
+                    last_tick: Instant::now(),
+                },
                 duration: Duration::default(),
             },
             Command::none(),
@@ -210,19 +216,17 @@ impl Application for ScreenKey {
             Message::InputChanged(new_value) => {
                 self.keys = new_value;
             }
-            Message::Tick(now) => {
-                match &mut self.timer_state {
-                    TimerState::Ticking { last_tick } => {
-                        if self.duration.as_secs() > 3 {
-                            println!("{:?}", self.duration);
-                            return Command::none();
-                        }
-                        self.duration += now - *last_tick;
-                        *last_tick = now;
+            Message::Tick(now) => match &mut self.timer_state {
+                TimerState::Ticking { last_tick } => {
+                    if self.duration.as_secs() > 3 {
+                        println!("{:?}", self.duration);
+                        return Command::none();
                     }
-                    _=>{}
+                    self.duration += now - *last_tick;
+                    *last_tick = now;
                 }
-            }
+                _ => {}
+            },
         }
         Command::none()
     }
@@ -233,11 +237,15 @@ impl Application for ScreenKey {
 
     fn subscription(&self) -> Subscription<Message> {
         let iced_events = subscription::events().map(Message::IcedEvents);
-        Subscription::batch(vec![keys::bind().map(Message::RdevEvents), iced_events,
+        Subscription::batch(vec![
+            keys::bind().map(Message::RdevEvents),
+            iced_events,
             match self.timer_state {
-                TimerState::Ticking { .. } => time::every(Duration::from_secs(1)).map(Message::Tick),
-                TimerState::Idle => Subscription::none()
-            }
+                TimerState::Ticking { .. } => {
+                    time::every(Duration::from_secs(1)).map(Message::Tick)
+                }
+                TimerState::Idle => Subscription::none(),
+            },
         ])
     }
 
@@ -283,15 +291,19 @@ impl ScreenKey {
         Self::erase_timer(&mut self.duration);
 
         let coming_key = key_to_string(key);
-        
-        // TODO: do this after changing self.keys to vec
-        // if coming_key == BACK_SPACE {
-        //     if let Some((keys, _)) = self.keys.rsplit_once(' ') {
-        //         self.keys = format!("{}", keys);
-        //         return Command::none();
-        //     }
-        // }
-        
+
+        if coming_key == BACK_SPACE {
+            let keys: Vec<&str> = self.keys.trim_end().rsplitn(2, ' ').collect();
+            if keys.len() == 1 {
+                self.keys.clear();
+            } else {
+                self.keys = format!("{} ", keys[keys.len() - 1].to_string());
+            }
+            self.key_frequency = 0;
+            self.frequent_key = "".to_string();
+            return Command::none();
+        }
+
         if self.frequent_key != coming_key {
             self.key_frequency = 0;
             self.frequent_key = "".to_string();
@@ -347,7 +359,7 @@ impl ScreenKey {
                     .collect::<String>()
             );
         }
-        
+
         Command::single(iced_native::command::Action::Window(
             native_window::Action::Resize {
                 width: self.max_width,
