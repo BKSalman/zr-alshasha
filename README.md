@@ -35,6 +35,8 @@ https://user-images.githubusercontent.com/85521119/188181233-1db31f88-77d2-4f54-
 
     width = 1000 # Default is 500
 
+    erase_on_backspace = true # Default is false
+
     [position]
     x = 2000 # Default is 1000
     y = 2000 # Default is 1000
