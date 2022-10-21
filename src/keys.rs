@@ -26,6 +26,7 @@ pub enum State {
     Starting,
     Ready(mpsc::UnboundedReceiver<rdev::Event>),
 }
+
 #[derive(Debug, Clone)]
 pub enum Event {
     Ready,

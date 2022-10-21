@@ -33,6 +33,7 @@ struct Config {
     position: Option<PositionConfig>,
     font_size: Option<u32>,
     width: Option<u32>,
+    erase_on_backspace: Option<bool>,
 }
 
 impl Default for Config {
@@ -41,6 +42,7 @@ impl Default for Config {
             position: Some(PositionConfig::default()),
             font_size: Some(30),
             width: Some(500),
+            erase_on_backspace: Some(false),
         }
     }
 }
@@ -59,7 +61,6 @@ impl Default for PositionConfig {
 
 #[derive(Default)]
 struct ScreenKey {
-    // TODO: change this to vec
     keys: String,
     key_frequency: u32,
     frequent_key: String,
@@ -71,6 +72,7 @@ struct ScreenKey {
     window_position: (i32, i32),
     timer_state: TimerState,
     duration: Duration,
+    erase_on_backspace: bool,
 }
 
 #[derive(Default)]
@@ -130,8 +132,6 @@ impl Application for ScreenKey {
             Config::default()
         });
 
-        println!("{config:?}");
-
         let max_width = config
             .width
             .unwrap_or_else(|| Config::default().width.unwrap());
@@ -153,6 +153,7 @@ impl Application for ScreenKey {
                     last_tick: Instant::now(),
                 },
                 duration: Duration::default(),
+                erase_on_backspace: config.erase_on_backspace.unwrap_or_default(),
             },
             Command::none(),
         )
@@ -202,7 +203,6 @@ impl Application for ScreenKey {
                     if self.is_grabbing {
                         let x = position.x as i32 + self.window_position.0 - self.grab_location.0;
                         let y = position.y as i32 + self.window_position.1 - self.grab_location.1;
-                        // println!("{:?}", self.window_position);
                         return window::move_to(x, y);
                     }
                 }
@@ -219,7 +219,10 @@ impl Application for ScreenKey {
             Message::Tick(now) => match &mut self.timer_state {
                 TimerState::Ticking { last_tick } => {
                     if self.duration.as_secs() > 3 {
+                        #[cfg(debug_assertions)]
+                        #[cfg(debug_assertions)]
                         println!("{:?}", self.duration);
+
                         return Command::none();
                     }
                     self.duration += now - *last_tick;
@@ -292,23 +295,28 @@ impl ScreenKey {
 
         let coming_key = key_to_string(key);
 
-        if coming_key == BACK_SPACE {
-            let keys: Vec<&str> = self.keys.trim_end().rsplitn(2, ' ').collect();
-            if keys.len() == 1 {
-                self.keys.clear();
-            } else {
-                self.keys = format!("{} ", keys[keys.len() - 1].to_string());
+        // if erase_on_backspace is specified as true in the config file
+        // erase the last key when pressing backspace
+        if self.erase_on_backspace {
+            if coming_key == BACK_SPACE {
+                let keys: Vec<&str> = self.keys.trim_end().rsplitn(2, ' ').collect();
+                if keys.len() == 1 {
+                    self.keys.clear();
+                } else {
+                    self.keys = format!("{} ", keys[keys.len() - 1].to_string());
+                }
+                self.key_frequency = 0;
+                self.frequent_key = "".to_string();
+                return Command::none();
             }
-            self.key_frequency = 0;
-            self.frequent_key = "".to_string();
-            return Command::none();
         }
 
+        // reset repeated key
         if self.frequent_key != coming_key {
             self.key_frequency = 0;
             self.frequent_key = "".to_string();
         }
-
+        
         let frequent_key = format!("{}...x{}", self.frequent_key, self.key_frequency);
 
         self.key_frequency += 1;
@@ -317,6 +325,8 @@ impl ScreenKey {
 
         let new_frequent_key = format!("{}...x{}", self.frequent_key, self.key_frequency);
 
+        // if key is pressed more than 3 types 
+        // replace the last 3 with <key>...x3
         if self.key_frequency > 3 {
             let repeated_key = format!(
                 "{} {} {} ",
@@ -325,13 +335,13 @@ impl ScreenKey {
 
             if self.keys.ends_with(repeated_key.as_str()) {
                 self.keys = format!(
-                    "{}{}",
+                    "{}{} ",
                     self.keys.trim_end_matches(repeated_key.as_str()),
                     new_frequent_key
                 );
             } else {
                 self.keys = format!(
-                    "{}{}",
+                    "{}{} ",
                     self.keys.trim_end_matches(frequent_key.as_str()),
                     new_frequent_key
                 );
@@ -350,6 +360,7 @@ impl ScreenKey {
 
         let coming_key_length = coming_key.chars().count();
 
+        // limit shown characters to max width
         if self.width >= self.max_width {
             self.keys = format!(
                 "...{}",
@@ -381,7 +392,6 @@ fn main() -> Result<(), iced::Error> {
 
     let config: Config = from_str(&config_str).unwrap_or_else(|e| {
         eprintln!("{e}");
-
         Config::default()
     });
 
