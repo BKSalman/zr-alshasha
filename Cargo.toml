@@ -5,7 +5,10 @@ edition = "2021"
 license = "GPL-3.0"
 description = "an app to show keyboard input"
 repository = "https://github.com/BKSalman/zr-alshasha"
+homepage = "https://github.com/BKSalman"
+readme = "README.md"
 keywords = ["keyboard", "input"]
+authors = ["Salman"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -17,3 +20,18 @@ rdev = "0.5.1"
 dirs = "4.0.0"
 toml = "0.5.9"
 serde = { version = "1.0.145", features = ["derive"] }
+
+
+[package.metadata.generate-rpm]
+assets = [
+  { source = "target/release/zr-alshasha", dest = "/usr/bin/zr-alshasha", mode = "755" },
+  # { source = "data/applications/zr-alshasha.desktop", dest = "/usr/share/applications/zr-alshasha.desktop", mode = "644" },
+  # { source = "data/icons/*/apps/zr-alshasha.png", dest = "/usr/share/icons/hicolor/", mode = "644" },
+]
+
+[package.metadata.deb]
+assets = [
+    ["target/release/zr-alshasha", "usr/bin/", "755"],
+    # ["data/applications/zr-alshasha.desktop", "usr/share/applications/", "644"],
+    # ["data/icons/*/apps/zr-alshasha.png", "usr/share/icons/hicolor/", "644"],
+]

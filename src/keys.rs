@@ -42,6 +42,7 @@ const DOWN_ARROW: &str = "ﰬ";
 const CONTROL: &str = "דּ";
 const DELETE: &str = "﫧";
 const HOME: &str = "";
+pub const BACK_SPACE: &str = "⌫";
 
 pub fn bind() -> Subscription<Event> {
     struct Keys;
@@ -173,7 +174,7 @@ pub fn iced_to_key(key_code: &KeyCode) -> String {
         KeyCode::Right => RIGHT_ARROW.to_string(),
         KeyCode::Down => DOWN_ARROW.to_string(),
 
-        KeyCode::Backspace => "⌫".to_string(),
+        KeyCode::Backspace => BACK_SPACE.to_string(),
         KeyCode::Enter => ENTER.to_string(),
         KeyCode::Space => "_".to_string(),
 
@@ -262,7 +263,7 @@ pub fn rdev_to_key(key_code: &rdev::Key) -> String {
     match key_code {
         rdev::Key::Alt => "Alt".to_string(),
         rdev::Key::AltGr => "Alt".to_string(),
-        rdev::Key::Backspace => "⌫".to_string(),
+        rdev::Key::Backspace => BACK_SPACE.to_string(),
         rdev::Key::CapsLock => "Caps".to_string(),
         rdev::Key::ControlLeft => CONTROL.to_string(),
         rdev::Key::ControlRight => CONTROL.to_string(),

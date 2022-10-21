@@ -14,7 +14,7 @@ args = ["clean"]
 description = "Build for linux"
 script = [
   "cargo build --release",
-  "strip -s target/release/ytdlp-gui",
+  "strip -s target/release/zr-alshasha",
 ]
 
 [tasks.rpm_build]
@@ -46,7 +46,7 @@ args = ["build", "--release", "--target", "x86_64-pc-windows-gnu"]
 description = "Add the linux binary to the packages directory"
 dependencies = ["linux_build"]
 script = [
-  "mv -f target/release/ytdlp-gui packages/ytdlp-gui-linux-x64-86"
+  "mv -f target/release/zr-alshasha packages/zr-alshasha-linux-x64-86"
 ]
 
 [tasks.package_deb]
@@ -76,8 +76,8 @@ description = "Package ffmpeg and yt-dlp and compress it with the app binary for
 dependencies = ["windows_build"]
 script = [
   "mkdir -p windows", 
-  "mv -f target/x86_64-pc-windows-gnu/release/ytdlp-gui.exe windows",
-  "zip -rj packages/ytdlp-gui-windows-64.zip windows/*"
+  "mv -f target/x86_64-pc-windows-gnu/release/zr-alshasha.exe windows",
+  "zip -rj packages/zr-alshasha-windows-64.zip windows/*"
 ]
 
 

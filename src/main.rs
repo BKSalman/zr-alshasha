@@ -18,6 +18,7 @@ use iced::{
 };
 
 use iced_native::{subscription, widget::Text, window as native_window};
+use keys::BACK_SPACE;
 use serde::Deserialize;
 use std::{io::Cursor, time::{Instant, Duration}};
 use toml::from_str;
@@ -56,6 +57,7 @@ impl Default for PositionConfig {
 
 #[derive(Default)]
 struct ScreenKey {
+    // TODO: change this to vec
     keys: String,
     key_frequency: u32,
     frequent_key: String,
@@ -281,7 +283,15 @@ impl ScreenKey {
         Self::erase_timer(&mut self.duration);
 
         let coming_key = key_to_string(key);
-
+        
+        // TODO: do this after changing self.keys to vec
+        // if coming_key == BACK_SPACE {
+        //     if let Some((keys, _)) = self.keys.rsplit_once(' ') {
+        //         self.keys = format!("{}", keys);
+        //         return Command::none();
+        //     }
+        // }
+        
         if self.frequent_key != coming_key {
             self.key_frequency = 0;
             self.frequent_key = "".to_string();
