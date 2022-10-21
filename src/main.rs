@@ -1,4 +1,5 @@
-// #![windows_subsystem = "windows"] // uncomment before build
+#![cfg_attr(not(debug_assertion), windows_subsystem = "windows")]
+
 use crate::keys::rdev_to_key;
 
 #[cfg(not(target_os = "linux"))]
@@ -8,9 +9,9 @@ use crate::keys::iced_to_key;
 use iced::keyboard::Event;
 
 use iced::{
+    time,
     container::{Style, StyleSheet},
-    executor,
-    mouse,
+    executor, mouse,
     widget::container,
     window::{self, Icon, Position},
     Application, Background, Color, Command, Element, Font, Settings, Subscription,
@@ -18,15 +19,17 @@ use iced::{
 
 use iced_native::{subscription, widget::Text, window as native_window};
 use serde::Deserialize;
-use std::io::Cursor;
+use std::{io::Cursor, time::{Instant, Duration}};
 use toml::from_str;
 
 mod keys;
+mod my_text;
 
 #[derive(Debug, Deserialize)]
 struct Config {
     position: Option<PositionConfig>,
     font_size: Option<u32>,
+    width: Option<u32>,
 }
 
 impl Default for Config {
@@ -34,6 +37,7 @@ impl Default for Config {
         Self {
             position: Some(PositionConfig::default()),
             font_size: Some(30),
+            width: Some(500),
         }
     }
 }
@@ -61,7 +65,15 @@ struct ScreenKey {
     is_grabbing: bool,
     grab_location: (i32, i32),
     window_position: (i32, i32),
-    // extra_width: u32,
+    timer_state: TimerState,
+    duration: Duration,
+}
+
+#[derive(Default)]
+enum TimerState {
+    #[default]
+    Idle,
+    Ticking{ last_tick: Instant }
 }
 
 #[derive(Debug, Clone)]
@@ -69,6 +81,7 @@ pub enum Message {
     RdevEvents(keys::Event),
     IcedEvents(iced_native::Event),
     InputChanged(String),
+    Tick(Instant),
 }
 
 const FONT: Font = Font::External {
@@ -111,17 +124,27 @@ impl Application for ScreenKey {
             Config::default()
         });
 
+        println!("{config:?}");
+
+        let max_width = config.width.unwrap_or_else(|| {
+            Config::default().width.unwrap()
+        });
+
         (
             Self {
                 keys: "".to_string(),
                 key_frequency: 0,
                 frequent_key: "".to_string(),
-                max_width: config.font_size.unwrap_or(30) * 20,
+                max_width,
                 width: 0,
-                font_size: config.font_size.unwrap_or(30),
+                font_size: config
+                    .font_size
+                    .unwrap_or_else(|| Config::default().font_size.unwrap()),
                 is_grabbing: false,
                 grab_location: (0, 0),
                 window_position: (0, 0),
+                timer_state: TimerState::Ticking { last_tick: Instant::now() },
+                duration: Duration::default(),
             },
             Command::none(),
         )
@@ -185,6 +208,19 @@ impl Application for ScreenKey {
             Message::InputChanged(new_value) => {
                 self.keys = new_value;
             }
+            Message::Tick(now) => {
+                match &mut self.timer_state {
+                    TimerState::Ticking { last_tick } => {
+                        if self.duration.as_secs() > 3 {
+                            println!("{:?}", self.duration);
+                            return Command::none();
+                        }
+                        self.duration += now - *last_tick;
+                        *last_tick = now;
+                    }
+                    _=>{}
+                }
+            }
         }
         Command::none()
     }
@@ -195,7 +231,12 @@ impl Application for ScreenKey {
 
     fn subscription(&self) -> Subscription<Message> {
         let iced_events = subscription::events().map(Message::IcedEvents);
-        Subscription::batch(vec![keys::bind().map(Message::RdevEvents), iced_events])
+        Subscription::batch(vec![keys::bind().map(Message::RdevEvents), iced_events,
+            match self.timer_state {
+                TimerState::Ticking { .. } => time::every(Duration::from_secs(1)).map(Message::Tick),
+                TimerState::Idle => Subscription::none()
+            }
+        ])
     }
 
     fn view(&mut self) -> Element<'_, Self::Message> {
@@ -206,7 +247,7 @@ impl Application for ScreenKey {
                 .color(Color::WHITE)
                 .font(FONT)
                 .vertical_alignment(iced::alignment::Vertical::Center)
-                .horizontal_alignment(iced::alignment::Horizontal::Center),
+                .horizontal_alignment(iced::alignment::Horizontal::Left),
         )
         .width(iced::Length::Fill)
         .height(iced::Length::Fill)
@@ -237,20 +278,22 @@ impl ScreenKey {
     where
         KS: keys::Keys,
     {
+        Self::erase_timer(&mut self.duration);
+
         let coming_key = key_to_string(key);
-        
+
         if self.frequent_key != coming_key {
             self.key_frequency = 0;
             self.frequent_key = "".to_string();
         }
 
-        let frequent_key = format!("{}...x{} ", self.frequent_key, self.key_frequency);
+        let frequent_key = format!("{}...x{}", self.frequent_key, self.key_frequency);
 
         self.key_frequency += 1;
 
         self.frequent_key = coming_key.clone();
 
-        let new_frequent_key = format!("{}...x{} ", self.frequent_key, self.key_frequency);
+        let new_frequent_key = format!("{}...x{}", self.frequent_key, self.key_frequency);
 
         if self.key_frequency > 3 {
             let repeated_key = format!(
@@ -271,25 +314,39 @@ impl ScreenKey {
                     new_frequent_key
                 );
             }
-        } else {
-            self.keys = format!("{}{} ", self.keys, coming_key);
+            return Command::single(iced_native::command::Action::Window(
+                native_window::Action::Resize {
+                    width: self.max_width,
+                    height: self.font_size + 10,
+                },
+            ));
         }
-        
+
+        self.keys = format!("{}{} ", self.keys, coming_key);
+
+        self.width = self.keys.chars().filter(|char| char != &' ').count() as u32 * self.font_size;
+
+        let coming_key_length = coming_key.chars().count();
+
         if self.width >= self.max_width {
-            let keys = self.keys.splitn(3, ' ')
-                .collect::<Vec<&str>>()[2];
-            
-            self.keys = format!("... {}", &keys.to_string());
+            self.keys = format!(
+                "...{}",
+                self.keys
+                    .chars()
+                    .skip(4 + coming_key_length)
+                    .collect::<String>()
+            );
         }
-        
-        self.width = (self.keys.trim_matches(' ').chars().count() / 2) as u32 * self.font_size;
         
         Command::single(iced_native::command::Action::Window(
             native_window::Action::Resize {
-                width: self.width + 50,
-                height: self.font_size,
+                width: self.max_width,
+                height: self.font_size + 10,
             },
         ))
+    }
+    fn erase_timer(duration: &mut Duration) {
+        *duration = Duration::default();
     }
 }
 
@@ -308,11 +365,17 @@ fn main() -> Result<(), iced::Error> {
 
     let position = config.position.unwrap_or_default();
 
-    let height = config.font_size.unwrap_or(30);
+    let height = config
+        .font_size
+        .unwrap_or_else(|| Config::default().font_size.unwrap());
+
+    let width = config
+        .width
+        .unwrap_or_else(|| Config::default().width.unwrap());
 
     let settings = Settings {
         window: iced::window::Settings {
-            size: (1, height),
+            size: (width, height + 10),
             position: Position::Specific(position.x, position.y),
             decorations: false,
             transparent: true,

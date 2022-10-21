@@ -2,7 +2,7 @@
 name = "zr-alshasha"
 version = "0.1.2"
 edition = "2021"
-license = "MIT OR Apache-2.0"
+license = "GPL-3.0"
 description = "an app to show keyboard input"
 repository = "https://github.com/BKSalman/zr-alshasha"
 keywords = ["keyboard", "input"]
@@ -10,7 +10,7 @@ keywords = ["keyboard", "input"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-iced = "0.4.2"
+iced = { version = "0.4.2", features = ["tokio"] }
 iced_native = "0.5.1"
 image = "0.24.3"
 rdev = "0.5.1"

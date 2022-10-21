@@ -57,7 +57,7 @@ pub fn bind() -> Subscription<Event> {
                         listen(move |event| {
                             sender
                                 .send(event)
-                                .unwrap_or_else(|e| println!("Could not send event {:?}", e))
+                                .unwrap_or_else(|e| eprintln!("Could not send event {:?}", e))
                                 .now_or_never();
                         })
                         .expect("Could not listen");
@@ -371,5 +371,8 @@ pub fn rdev_to_key(key_code: &rdev::Key) -> String {
 
 fn unknown_to_key(unknown: &u32) -> String {
     println!("{unknown}");
-    format!("{unknown}")
+    match unknown {
+        171 => format!("怜"),
+        _ => format!("{unknown}")
+    }
 }
