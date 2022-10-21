@@ -1,0 +1,22 @@
+name: Build
+on:
+  push:
+    branches:
+      - main
+jobs:      
+ macos:
+    runs-on: macOS-latest
+    steps:
+    - uses: hecrj/setup-rust-action@v1
+    - uses: actions/checkout@master
+    - name: Build binary
+      env:
+        MACOSX_DEPLOYMENT_TARGET: 10.14
+      run: cargo build --verbose --release
+    - name: Open binary via double-click
+      run: chmod +x target/release/zr-alshasha
+    - name: Archive binary
+      uses: actions/upload-artifact@v1
+      with:
+        name: zr-alshasha-x86_64-apple-darwin
+        path: target/release/zr-alshasha
