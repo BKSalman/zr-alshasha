@@ -1,0 +1,85 @@
+# [tasks.myclean]
+# description = "Clean previous build files"
+# script = [
+#   "rm -f packages/* | tr '\n' ','"
+# ]
+
+[tasks.myclean]
+description = "Clean previous build files"
+command = "cargo"
+args = ["clean"]
+
+
+[tasks.linux_build]
+description = "Build for linux"
+script = [
+  "cargo build --release",
+  "strip -s target/release/ytdlp-gui",
+]
+
+[tasks.rpm_build]
+description = "Build RPM"
+install_crate = "cargo-generate-rpm"
+dependencies = ["linux_build"]
+command = "cargo"
+args = ["generate-rpm"]
+
+[tasks.deb_build]
+description = "Build DEB"
+install_crate = "cargo-deb"
+command = "cargo"
+args = ["deb"]
+
+[tasks.aur_build]
+description = "Build tarbell and PKGBUILD"
+install_crate = "cargo-aur"
+dependencies = ["linux_build"]
+command = "cargo"
+args = ["aur"]
+
+[tasks.windows_build]
+description = "Build for windows"
+command = "cargo"
+args = ["build", "--release", "--target", "x86_64-pc-windows-gnu"]
+
+[tasks.package_linux]
+description = "Add the linux binary to the packages directory"
+dependencies = ["linux_build"]
+script = [
+  "mv -f target/release/ytdlp-gui packages/ytdlp-gui-linux-x64-86"
+]
+
+[tasks.package_deb]
+description = "Add the deb package to the packages directory"
+dependencies = ["deb_build"]
+script = [
+  "mv -f target/debian/*.deb packages/"
+]
+
+[tasks.package_rpm]
+description = "Add the rpm package to the packages directory"
+dependencies = ["rpm_build"]
+script = [
+  "mv -f target/generate-rpm/*.rpm packages/"
+]
+
+[tasks.package_aur]
+description = "Add the rpm package to the packages directory"
+dependencies = ["aur_build"]
+script = [
+  "mv -f PKGBUILD packages/",
+  "mv -f *.tar.gz packages/"
+]
+
+[tasks.package_windows]
+description = "Package ffmpeg and yt-dlp and compress it with the app binary for windows"
+dependencies = ["windows_build"]
+script = [
+  "mkdir -p windows", 
+  "mv -f target/x86_64-pc-windows-gnu/release/ytdlp-gui.exe windows",
+  "zip -rj packages/ytdlp-gui-windows-64.zip windows/*"
+]
+
+
+[tasks.packages]
+dependencies = ["myclean", "package_rpm", "package_deb", "package_aur", "package_linux", "package_windows"]
