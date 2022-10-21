@@ -1,10 +1,10 @@
-name: Rust
+name: Build
 on:
   push:
     branches:
       - main
 jobs:      
-  todos_macos:
+ macos:
     runs-on: macOS-latest
     steps:
     - uses: hecrj/setup-rust-action@v1
@@ -15,7 +15,7 @@ jobs:
       run: cargo build --verbose --release
     - name: Open binary via double-click
       run: chmod +x target/release/zr-alshasha
-    - name: Archive todos binary
+    - name: Archive binary
       uses: actions/upload-artifact@v1
       with:
         name: todos-x86_64-apple-darwin
