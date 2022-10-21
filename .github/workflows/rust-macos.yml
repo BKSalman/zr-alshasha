@@ -1,0 +1,18 @@
+name: Rust static build
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    name: build for all platforms
+    runs-on: ubuntu-latest
+    env:
+      CARGO_TERM_COLOR: always
+      BINARY_NAME: zr-alshasha
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build-musl macOS x86
+      uses: shogan/rust-musl-action@master
+      with:
+        args: cargo build --target x86_64-apple-darwin --release
