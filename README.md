@@ -8,7 +8,8 @@ it's useful for diplaying your keyboard input while streaming, making tutorials,
 
 # Small Demo
 
-https://user-images.githubusercontent.com/85521119/188181233-1db31f88-77d2-4f54-8c96-f4545c90d048.mp4
+[zr-alshasha.webm](https://user-images.githubusercontent.com/85521119/197903583-5bec6f96-b92b-471f-9650-0d6eeaaeb58c.webm)
+
 
 # Key binds
 
