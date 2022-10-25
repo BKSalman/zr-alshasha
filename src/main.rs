@@ -316,13 +316,13 @@ impl ScreenKey {
             self.frequent_key = "".to_string();
         }
         
-        let frequent_key = format!("{}...x{}", self.frequent_key, self.key_frequency);
+        let frequent_key = format!("{}...x{} ", self.frequent_key, self.key_frequency);
 
         self.key_frequency += 1;
 
         self.frequent_key = coming_key.clone();
 
-        let new_frequent_key = format!("{}...x{}", self.frequent_key, self.key_frequency);
+        let new_frequent_key = format!("{}...x{} ", self.frequent_key, self.key_frequency);
 
         // if key is pressed more than 3 types 
         // replace the last 3 with <key>...x3
@@ -334,26 +334,20 @@ impl ScreenKey {
 
             if self.keys.ends_with(repeated_key.as_str()) {
                 self.keys = format!(
-                    "{}{} ",
+                    "{}{}",
                     self.keys.trim_end_matches(repeated_key.as_str()),
                     new_frequent_key
                 );
             } else {
                 self.keys = format!(
-                    "{}{} ",
+                    "{}{}",
                     self.keys.trim_end_matches(frequent_key.as_str()),
                     new_frequent_key
                 );
             }
-            return Command::single(iced_native::command::Action::Window(
-                native_window::Action::Resize {
-                    width: self.max_width,
-                    height: self.font_size + 10,
-                },
-            ));
+        } else {
+            self.keys = format!("{}{} ", self.keys, coming_key);
         }
-
-        self.keys = format!("{}{} ", self.keys, coming_key);
 
         self.width = self.keys.chars().filter(|char| char != &' ').count() as u32 * self.font_size;
 
