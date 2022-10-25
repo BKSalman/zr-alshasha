@@ -46,6 +46,23 @@ https://user-images.githubusercontent.com/85521119/188181233-1db31f88-77d2-4f54-
 
 You can track features in [this issue](https://github.com/BKSalman/zr-alshasha/issues/4)
 
+# Installation
+## Linux
+
+### Fedora
+download the rpm package from the releases page then install it with ``sudo dnf localinstall <rpm_package_name>``
+
+### Ubuntu
+download the deb package from the releases page then install it with ``sudo apt install ./<deb_package_name>``
+
+### other distributions
+
+download the ``zr-alshasha`` binary from the [realeases page](https://github.com/BKSalman/ytdlp-gui/releases)
+
+## Windows
+##### just download the zip file from the releases page, extract it in a subfolder and start the ``zr-alshasha.exe``
+
+
 ## what does Zr Alshasha mean
 
 it just means screen key in Arabic
