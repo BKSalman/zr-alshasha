@@ -220,7 +220,6 @@ impl Application for ScreenKey {
                 TimerState::Ticking { last_tick } => {
                     if self.duration.as_secs() > 3 {
                         #[cfg(debug_assertions)]
-                        #[cfg(debug_assertions)]
                         println!("{:?}", self.duration);
 
                         return Command::none();

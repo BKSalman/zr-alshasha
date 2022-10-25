@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Zr alshasha
+GenericName=ScreenKey
+Comment=Display keys on your screen!
+Exec=zr-alshasha
+# Icon=zr-alshasha
+Terminal=false
+Type=Application
+Categories=Input;Keyboard;

@@ -1,6 +1,6 @@
 [package]
 name = "zr-alshasha"
-version = "0.1.2"
+version = "0.2.0"
 edition = "2021"
 license = "GPL-3.0"
 description = "an app to show keyboard input"
@@ -25,13 +25,13 @@ serde = { version = "1.0.145", features = ["derive"] }
 [package.metadata.generate-rpm]
 assets = [
   { source = "target/release/zr-alshasha", dest = "/usr/bin/zr-alshasha", mode = "755" },
-  # { source = "data/applications/zr-alshasha.desktop", dest = "/usr/share/applications/zr-alshasha.desktop", mode = "644" },
+  { source = "data/applications/zr-alshasha.desktop", dest = "/usr/share/applications/zr-alshasha.desktop", mode = "644" },
   # { source = "data/icons/*/apps/zr-alshasha.png", dest = "/usr/share/icons/hicolor/", mode = "644" },
 ]
 
 [package.metadata.deb]
 assets = [
     ["target/release/zr-alshasha", "usr/bin/", "755"],
-    # ["data/applications/zr-alshasha.desktop", "usr/share/applications/", "644"],
+    ["data/applications/zr-alshasha.desktop", "usr/share/applications/", "644"],
     # ["data/icons/*/apps/zr-alshasha.png", "usr/share/icons/hicolor/", "644"],
 ]
